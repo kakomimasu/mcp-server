@@ -10,7 +10,15 @@ app.get("/", (c) => {
   return c.text("Hello, MCP Server!");
 });
 
-app.all("/mcp", async (c) => {
+app.get("/mcp", (c) => {
+  console.log("GET /mcp");
+  c.status(200);
+  return c.text("MCP endpoint is working!");
+});
+
+app.post("/mcp", async (c) => {
+  console.log("POST /mcp");
+  console.log("method", c.req.method);
   const sessionId = c.req.header("mcp-session-id");
   console.log("Session ID:", sessionId);
   console.log(await c.req.text());
@@ -53,6 +61,14 @@ app.all("/mcp", async (c) => {
   }
 
   return transport.handleRequest(c);
+});
+
+app.delete("/mcp", async (c) => {
+  console.log("DELETE /mcp");
+  const sessionId = c.req.header("mcp-session-id");
+  console.log("Session ID:", sessionId);
+
+  return c.newResponse(null, 200);
 });
 
 export default app;
