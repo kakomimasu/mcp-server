@@ -14,6 +14,7 @@ app.all("/mcp", async (c) => {
   const sessionId = c.req.header("mcp-session-id");
   console.log("Session ID:", sessionId);
   console.log(await c.req.text());
+  console.log("sessions", sessions);
 
   let transport: StreamableHTTPTransport;
 
