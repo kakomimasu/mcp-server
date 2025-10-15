@@ -86,7 +86,8 @@ function createOutputGameData(game: Game, sessionData: SessionData) {
       const agents = player.agents.map((agent, agentIndex) => ({
         x: agent.x,
         y: agent.y,
-        lastRes: lastLog && lastLog[agentIndex].res,
+        lastRes: lastLog &&
+          lastLog.find((actionLog) => actionLog.agentId === agentIndex)?.res,
       }));
 
       return ({
@@ -155,6 +156,62 @@ export function createMcpServer() {
       boardName: "A-2",
       nAgent: 3,
       totalTurn: 10,
+    });
+
+    console.log("Starting game with ID:", joinRes.gameId);
+
+    let game: Game | undefined;
+
+    try {
+      while (game?.status !== "gaming") {
+        await delay(1000);
+
+        const res = await apiClient.getMatch(joinRes.gameId);
+        game = res;
+      }
+    } catch (error) {
+      throw error;
+    }
+
+    if (!sessionId) {
+      throw new Error("セッションIDが取得できません");
+    }
+
+    const sessionData = {
+      data: {
+        pic: joinRes.pic,
+        gameId: joinRes.gameId,
+        playerIndex: joinRes.index,
+        nowTurn: game.turn,
+      },
+    };
+
+    await setSessionData(sessionId, sessionData);
+
+    const structuredContent = createOutputGameData(game, sessionData);
+    return {
+      content: [{
+        type: "text",
+        text: JSON.stringify(structuredContent),
+      }],
+      structuredContent: structuredContent,
+    };
+  });
+
+  mcpServer.registerTool("join-game", {
+    title: "ゲームIDで参加",
+    description: "指定したゲームIDで参加します",
+    annotations: {
+      openWorldHint: false,
+    },
+    inputSchema: {
+      name: z.string().describe("自分の名前"),
+      gameId: z.string().uuid().describe("参加するゲームのID"),
+    },
+    outputSchema: outputGameSchema,
+  }, async ({ name, gameId }, { sessionId }) => {
+    const joinRes = await apiClient.joinGameIdMatch(gameId, {
+      guestName: name,
     });
 
     console.log("Starting game with ID:", joinRes.gameId);
