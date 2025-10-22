@@ -18,3 +18,17 @@
   },
 }
 ```
+
+**Gemini CLI**
+
+`.gemini/settings.json` などで以下のように設定
+
+```json:.gemini/settings.json
+{
+  "mcpServers": {
+    "kakomimasu-mcp": {
+      "httpUrl": "https://mcp.kakomimasu.com/mcp"
+    }
+  }
+}
+```
